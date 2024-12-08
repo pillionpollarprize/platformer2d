@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEditor.MPE;
 using UnityEngine;
 
@@ -8,6 +9,9 @@ public class Player : MonoBehaviour
     [Header("Movement")]
     public float movementSpeed = 10f;
     public float jumpHeight = 3f;
+    public float dashSpeed = 30;
+    public float dashDuration = 0.2f;
+    public float dashCooldown = 1f;
     [Header("Jump")]
     public Transform groundCheck; // player legs
     public LayerMask groundLayer;
@@ -15,11 +19,19 @@ public class Player : MonoBehaviour
     [Header("Jump Mechanics")]
     public float coyoteTime = 0.3f;
     public float jumpBufferTime = 0.2f;
+    public int maxJumps = 2;
+    [Header("Health")]
+    public TextMeshProUGUI heartText;
+    [HideInInspector] public string temp;
 
-    private bool doubleJumpReady = false;
-    private bool dashReady = false;
+    private int jumpsLeft;
     private float jumpBufferCounter;
     private float coyoteTimeCounter;
+    private float dashTime;
+    private float dashCooldownTime;
+    private bool dashReady;
+    private int hearts;
+    
 
     private bool isGrounded;
 
@@ -29,6 +41,8 @@ public class Player : MonoBehaviour
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
+        hearts = 3;
+        DoHearts();
     }
 
     // Update is called once per frame
@@ -40,42 +54,56 @@ public class Player : MonoBehaviour
         if (isGrounded)
         {
             coyoteTimeCounter = coyoteTime;
-            doubleJumpReady = true;
+            jumpsLeft = maxJumps;
         }
         else coyoteTimeCounter -= Time.deltaTime;
 
         if (Input.GetButtonDown("Jump"))
         {
             jumpBufferCounter = jumpBufferTime;
-            dashReady = true;
         }
         else jumpBufferCounter -= Time.deltaTime;
 
         // dash
-        if (Input.GetButtonDown("Fire3") && coyoteTimeCounter > 0 && jumpBufferCounter < 0 && dashReady)
+        if (Input.GetKeyDown(KeyCode.LeftShift) && dashCooldownTime <= 0)
         {
-            print("Dash");
-            rb.velocity = new Vector2(5, rb.velocity.y);
-            dashReady = false;
+            dashReady = true;
+            dashTime = dashDuration;
+            dashCooldownTime = dashCooldown;
         }
-        // double jump
-        if (coyoteTimeCounter < 0 && jumpBufferCounter > 0 && doubleJumpReady)
+        if (dashReady)
         {
-            var jumpVelocity = Mathf.Sqrt(jumpHeight * -2f * Physics.gravity.y * rb.gravityScale);
-            rb.velocity = new Vector2(rb.velocity.x, jumpVelocity);
-            doubleJumpReady = false;    
-        }
+            rb.velocity = new Vector2(inputX * dashSpeed, rb.velocity.y);
+            dashTime -= Time.deltaTime;
 
+            if(dashTime <= 0)
+            {
+                dashReady = false;
+            }
+            dashCooldownTime -= Time.deltaTime;
+        }
         // simple jump
-        if (coyoteTimeCounter > 0 && jumpBufferCounter > 0) 
+        if ((coyoteTimeCounter > 0 || jumpsLeft > 0) && jumpBufferCounter > 0) 
         {
             jumpBufferCounter = 0; //prevent infinite jump
             var jumpVelocity = Mathf.Sqrt(jumpHeight * -2f * Physics.gravity.y * rb.gravityScale);
             rb.velocity = new Vector2(rb.velocity.x, jumpVelocity);
+            if (!isGrounded)
+            {
+                jumpsLeft--;
+            }
         }
     }
     private void FixedUpdate()
     {
-        rb.velocity = new Vector2(inputX * movementSpeed, rb.velocity.y);
+        if(!dashReady) rb.velocity = new Vector2(inputX * movementSpeed, rb.velocity.y);
+    }
+    void DoHearts()
+    {
+        for (int i = 0; i < hearts; i++)
+        {
+            temp += "<3 ";
+        }
+        heartText.text = temp;
     }
 }
