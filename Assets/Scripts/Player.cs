@@ -20,9 +20,7 @@ public class Player : MonoBehaviour
     public float coyoteTime = 0.3f;
     public float jumpBufferTime = 0.2f;
     public int maxJumps = 2;
-    [Header("Health")]
-    public TextMeshProUGUI heartText;
-    [HideInInspector] public string temp;
+    public AudioClip jumpSnd;
 
     private int jumpsLeft;
     private float jumpBufferCounter;
@@ -30,19 +28,17 @@ public class Player : MonoBehaviour
     private float dashTime;
     private float dashCooldownTime;
     private bool dashReady;
-    private int hearts;
     
-
     private bool isGrounded;
 
     public Rigidbody2D rb;
+    private AudioSource audSrc;
     private float inputX;
     // Start is called before the first frame update
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
-        hearts = 3;
-        DoHearts();
+        audSrc = GetComponent<AudioSource>();
     }
 
     // Update is called once per frame
@@ -85,6 +81,7 @@ public class Player : MonoBehaviour
         // simple jump
         if ((coyoteTimeCounter > 0 || jumpsLeft > 0) && jumpBufferCounter > 0) 
         {
+            audSrc.PlayOneShot(jumpSnd);
             jumpBufferCounter = 0; //prevent infinite jump
             var jumpVelocity = Mathf.Sqrt(jumpHeight * -2f * Physics.gravity.y * rb.gravityScale);
             rb.velocity = new Vector2(rb.velocity.x, jumpVelocity);
@@ -96,14 +93,6 @@ public class Player : MonoBehaviour
     }
     private void FixedUpdate()
     {
-        if(!dashReady) rb.velocity = new Vector2(inputX * movementSpeed, rb.velocity.y);
-    }
-    void DoHearts()
-    {
-        for (int i = 0; i < hearts; i++)
-        {
-            temp += "<3 ";
-        }
-        heartText.text = temp;
+        if (!dashReady) rb.velocity = new Vector2(inputX * movementSpeed, rb.velocity.y);
     }
 }

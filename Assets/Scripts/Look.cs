@@ -15,7 +15,7 @@ public class Look : MonoBehaviour
     void Update()
     {
         var mousePos = Input.mousePosition;
-        var worldPos = cam.WorldToScreenPoint(mousePos);
+        var worldPos = cam.ScreenToWorldPoint(mousePos);
         worldPos.z = 0;
         var direction = worldPos - transform.position;
         direction.Normalize(); // makes the vector have values between -1 and 1
