@@ -20,8 +20,11 @@ public class Player : MonoBehaviour
     public float coyoteTime = 0.3f;
     public float jumpBufferTime = 0.2f;
     public int maxJumps = 2;
+    [Header("Misc.")]
     public AudioClip jumpSnd;
-
+    public AudioClip dashSnd;
+    public TextMeshProUGUI coinText;
+    [HideInInspector] public int coinAmount;
     private int jumpsLeft;
     private float jumpBufferCounter;
     private float coyoteTimeCounter;
@@ -32,13 +35,14 @@ public class Player : MonoBehaviour
     private bool isGrounded;
 
     public Rigidbody2D rb;
-    private AudioSource audSrc;
+    public AudioSource audSrc;
     private float inputX;
     // Start is called before the first frame update
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
         audSrc = GetComponent<AudioSource>();
+        coinText.text = coinAmount.ToString();
     }
 
     // Update is called once per frame
@@ -69,15 +73,17 @@ public class Player : MonoBehaviour
         }
         if (dashReady)
         {
+            
             rb.velocity = new Vector2(inputX * dashSpeed, rb.velocity.y);
             dashTime -= Time.deltaTime;
 
             if(dashTime <= 0)
             {
+                audSrc.PlayOneShot(dashSnd);
                 dashReady = false;
             }
-            dashCooldownTime -= Time.deltaTime;
         }
+        dashCooldownTime -= Time.deltaTime;
         // simple jump
         if ((coyoteTimeCounter > 0 || jumpsLeft > 0) && jumpBufferCounter > 0) 
         {

@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -24,7 +25,14 @@ public class Health : MonoBehaviour
         if(health <= 0) 
         {
             health = 0;
-            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+            if (gameObject.CompareTag("Player"))
+            {
+                SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+            }
+            else
+            {
+                Destroy(gameObject);
+            }
         }
         UpdateHearts();
     }
@@ -42,7 +50,8 @@ public class Health : MonoBehaviour
             }
             else
             {
-                hearts[i].sprite = mptyHeart;
+                hearts[i].sprite = mptyHeart
+                    ;
             }
         }
     }
